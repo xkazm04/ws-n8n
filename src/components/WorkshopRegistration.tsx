@@ -90,12 +90,6 @@ export function WorkshopRegistration() {
     }
   }
 
-  const resetForm = () => {
-    setFormData({ name: '', surname: '' })
-    setErrors({})
-    setInvitationUrl('')
-  }
-
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
@@ -142,23 +136,9 @@ export function WorkshopRegistration() {
                 </Button>
               </div>
             </div>
-            <Alert className="bg-primary/10 border-primary/20">
-              <CheckCircle className="h-4 w-4 text-primary" weight="fill" />
-              <AlertDescription>
-                <strong>Registration Status:</strong> This invitation link has been marked as "registered" 
-                and assigned to {formData.name} {formData.surname}.
-              </AlertDescription>
-            </Alert>
             <p className="text-sm text-muted-foreground text-center">
               Use this invitation link to access the workshop. Save it for your records!
             </p>
-            <Button 
-              onClick={resetForm}
-              variant="outline"
-              className="w-full"
-            >
-              Register Another Person
-            </Button>
           </CardContent>
         </Card>
       </div>
