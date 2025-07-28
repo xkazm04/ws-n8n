@@ -111,14 +111,7 @@ export function WorkshopRegistration() {
     
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Card className="w-full max-w-md relative">
-          {/* Workshop Status Badge */}
-          <div className="absolute top-4 right-4 bg-primary/10 border border-primary/20 rounded-md px-2 py-1">
-            <span className="text-xs font-medium text-primary">
-              {registeredCount}/{registeredCount + availableCount}
-            </span>
-          </div>
-          
+        <Card className="w-full max-w-md relative">          
           <CardHeader className="text-center pr-16">
             <div className="flex justify-center mb-4">
               <CheckCircle className="w-16 h-16 text-primary" weight="fill" />
