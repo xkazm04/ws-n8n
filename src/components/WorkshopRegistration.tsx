@@ -106,10 +106,20 @@ export function WorkshopRegistration() {
   }
 
   if (invitationUrl) {
+    const registeredCount = invitations.filter(inv => inv.status === 'registered').length
+    const availableCount = invitations.filter(inv => inv.status === 'open').length
+    
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
+        <Card className="w-full max-w-md relative">
+          {/* Workshop Status Badge */}
+          <div className="absolute top-4 right-4 bg-primary/10 border border-primary/20 rounded-md px-2 py-1">
+            <span className="text-xs font-medium text-primary">
+              {registeredCount}/{registeredCount + availableCount}
+            </span>
+          </div>
+          
+          <CardHeader className="text-center pr-16">
             <div className="flex justify-center mb-4">
               <CheckCircle className="w-16 h-16 text-primary" weight="fill" />
             </div>
@@ -162,10 +172,20 @@ export function WorkshopRegistration() {
     )
   }
 
+  const registeredCount = invitations.filter(inv => inv.status === 'registered').length
+  const availableCount = invitations.filter(inv => inv.status === 'open').length
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+      <Card className="w-full max-w-md relative">
+        {/* Workshop Status Badge */}
+        <div className="absolute top-4 right-4 bg-primary/10 border border-primary/20 rounded-md px-2 py-1">
+          <span className="text-xs font-medium text-primary">
+            {registeredCount}/{registeredCount + availableCount}
+          </span>
+        </div>
+        
+        <CardHeader className="text-center pr-16">
           <CardTitle className="text-2xl font-bold text-foreground">
             N8N Workshop Registration
           </CardTitle>
@@ -226,23 +246,6 @@ export function WorkshopRegistration() {
                     </AlertDescription>
                   </Alert>
                 )}
-              </div>
-            </div>
-
-            {/* Invitation Status Display */}
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <div className="text-xs text-muted-foreground mb-1">Workshop Status</div>
-              <div className="flex justify-between text-sm">
-                <span>Available spots:</span>
-                <span className="font-medium text-primary">
-                  {invitations.filter(inv => inv.status === 'open').length}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Registered:</span>
-                <span className="font-medium">
-                  {invitations.filter(inv => inv.status === 'registered').length}
-                </span>
               </div>
             </div>
 
