@@ -1,5 +1,7 @@
+import { WorkshopRegistration } from './components/WorkshopRegistration'
+
 function App() {
-    return <div></div>
+    return <WorkshopRegistration />
 }
 
 export default App

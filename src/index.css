@@ -1,1 +1,64 @@
-/* This is where custom CSS goes */
+@import 'tailwindcss';
+@import "tw-animate-css";
+
+:root {
+  --background: oklch(0.97 0 0); /* gray-100 */
+  --foreground: oklch(0.15 0 0); /* gray-900 */
+  --card: oklch(1 0 0); /* white */
+  --card-foreground: oklch(0.15 0 0); /* gray-900 */
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  --primary: oklch(0.67 0.15 162); /* green-500 */
+  --primary-foreground: oklch(1 0 0); /* white */
+  --secondary: oklch(0.94 0 0); /* gray-200 */
+  --secondary-foreground: oklch(0.25 0 0); /* gray-800 */
+  --muted: oklch(0.94 0 0); /* gray-200 */
+  --muted-foreground: oklch(0.45 0 0); /* gray-600 */
+  --accent: oklch(0.62 0.17 165); /* emerald-600 */
+  --accent-foreground: oklch(1 0 0); /* white */
+  --destructive: oklch(0.627 0.245 27.325); /* red */
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.89 0 0); /* gray-300 */
+  --input: oklch(0.89 0 0); /* gray-300 */
+  --ring: oklch(0.62 0.17 165); /* emerald-600 */
+  --radius: 0.5rem;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 3);
+  --radius-full: 9999px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-inter;
+    font-family: 'Inter', sans-serif;
+  }
+}
