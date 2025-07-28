@@ -4,7 +4,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle, ExclamationTriangle } from '@phosphor-icons/react'
+import { CheckCircle, ExclamationTriangle, Copy } from '@phosphor-icons/react'
+import { useKV } from '@github/spark/hooks'
+import { InvitationLink } from '@/types/invitation'
+import { InvitationService } from '@/services/invitationService'
+import { toast } from 'sonner'
 
 interface FormData {
   name: string
@@ -19,8 +23,14 @@ interface FormErrors {
 export function WorkshopRegistration() {
   const [formData, setFormData] = useState<FormData>({ name: '', surname: '' })
   const [errors, setErrors] = useState<FormErrors>({})
-  const [registrationUuid, setRegistrationUuid] = useState<string>('')
+  const [invitationUrl, setInvitationUrl] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Initialize invitation links with sample data
+  const [invitations, setInvitations] = useKV<InvitationLink[]>(
+    'workshop-invitations', 
+    InvitationService.initializeSampleData()
+  )
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -37,14 +47,6 @@ export function WorkshopRegistration() {
     return Object.keys(newErrors).length === 0
   }
 
-  const generateUuid = (): string => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0
-      const v = c === 'x' ? r : (r & 0x3 | 0x8)
-      return v.toString(16)
-    })
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -57,8 +59,26 @@ export function WorkshopRegistration() {
     // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 800))
     
-    const uuid = generateUuid()
-    setRegistrationUuid(uuid)
+    const userName = `${formData.name} ${formData.surname}`
+    const { updatedInvitations, invitationUrl: resultUrl } = InvitationService.registerUser(
+      invitations, 
+      userName
+    )
+    
+    if (resultUrl) {
+      setInvitations(updatedInvitations)
+      setInvitationUrl(resultUrl)
+    } else {
+      // No open invitations available - create a new one
+      const newInvitation = InvitationService.createNewInvitation()
+      const newInvitations = [...invitations, newInvitation]
+      const { updatedInvitations: finalInvitations, invitationUrl: finalUrl } = 
+        InvitationService.registerUser(newInvitations, userName)
+      
+      setInvitations(finalInvitations)
+      setInvitationUrl(finalUrl || '')
+    }
+    
     setIsSubmitting(false)
   }
 
@@ -73,10 +93,19 @@ export function WorkshopRegistration() {
   const resetForm = () => {
     setFormData({ name: '', surname: '' })
     setErrors({})
-    setRegistrationUuid('')
+    setInvitationUrl('')
   }
 
-  if (registrationUuid) {
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success('Invitation link copied to clipboard!')
+    } catch (err) {
+      toast.error('Failed to copy link')
+    }
+  }
+
+  if (invitationUrl) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="w-full max-w-md">
@@ -92,16 +121,33 @@ export function WorkshopRegistration() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="bg-muted p-4 rounded-lg">
+            <div className="bg-muted p-4 rounded-lg space-y-3">
               <Label className="text-sm font-medium text-muted-foreground">
-                Registration ID
+                Workshop Invitation Link
               </Label>
-              <p className="font-mono text-sm mt-1 text-foreground break-all">
-                {registrationUuid}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-sm text-foreground break-all flex-1 p-2 bg-background rounded border">
+                  {invitationUrl}
+                </p>
+                <Button
+                  onClick={() => copyToClipboard(invitationUrl)}
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
+            <Alert className="bg-primary/10 border-primary/20">
+              <CheckCircle className="h-4 w-4 text-primary" weight="fill" />
+              <AlertDescription>
+                <strong>Registration Status:</strong> This invitation link has been marked as "registered" 
+                and assigned to {formData.name} {formData.surname}.
+              </AlertDescription>
+            </Alert>
             <p className="text-sm text-muted-foreground text-center">
-              Please save this ID for your records. You'll receive workshop details soon!
+              Use this invitation link to access the workshop. Save it for your records!
             </p>
             <Button 
               onClick={resetForm}
@@ -180,6 +226,23 @@ export function WorkshopRegistration() {
                     </AlertDescription>
                   </Alert>
                 )}
+              </div>
+            </div>
+
+            {/* Invitation Status Display */}
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <div className="text-xs text-muted-foreground mb-1">Workshop Status</div>
+              <div className="flex justify-between text-sm">
+                <span>Available spots:</span>
+                <span className="font-medium text-primary">
+                  {invitations.filter(inv => inv.status === 'open').length}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Registered:</span>
+                <span className="font-medium">
+                  {invitations.filter(inv => inv.status === 'registered').length}
+                </span>
               </div>
             </div>
 
