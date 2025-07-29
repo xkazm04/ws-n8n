@@ -38,6 +38,7 @@ const customCodeTheme = {
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const [checkboxStates, setCheckboxStates] = useState<Record<string, boolean>>({})
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [animatingCheckboxes, setAnimatingCheckboxes] = useState<Set<string>>(new Set())
 
   const copyToClipboard = async (text: string, codeId: string) => {
     try {
@@ -174,10 +175,26 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   }, [content])
 
   const toggleCheckbox = (id: string) => {
-    setCheckboxStates(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }))
+    setCheckboxStates(prev => {
+      const newState = !prev[id]
+      
+      // Add animation if becoming checked
+      if (newState) {
+        setAnimatingCheckboxes(current => new Set([...current, id]))
+        setTimeout(() => {
+          setAnimatingCheckboxes(current => {
+            const newSet = new Set(current)
+            newSet.delete(id)
+            return newSet
+          })
+        }, 400)
+      }
+      
+      return {
+        ...prev,
+        [id]: newState
+      }
+    })
   }
 
   const renderInlineContent = (text: string) => {
@@ -268,19 +285,57 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
           case 'checkbox':
             const isChecked = checkboxStates[element.id!] ?? element.checked
+            const isAnimating = animatingCheckboxes.has(element.id!)
             return (
-              <div key={index} className="flex items-center gap-3 my-3">
-                <input
-                  type="checkbox"
-                  id={element.id}
-                  checked={isChecked}
-                  onChange={() => toggleCheckbox(element.id!)}
-                  className="w-4 h-4 rounded border-border text-primary focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-                />
+              <div key={index} className="flex items-center gap-3 my-3 group">
+                <div className="relative checkbox-wrapper">
+                  <input
+                    type="checkbox"
+                    id={element.id}
+                    checked={isChecked}
+                    onChange={() => toggleCheckbox(element.id!)}
+                    className="sr-only"
+                  />
+                  <label 
+                    htmlFor={element.id}
+                    className={`
+                      w-5 h-5 rounded-md border-2 flex items-center justify-center cursor-pointer
+                      transition-all duration-300 ease-out hover:scale-110 active:scale-95
+                      checkbox-focus relative overflow-hidden
+                      ${isChecked 
+                        ? 'bg-primary border-primary shadow-lg shadow-primary/25 ring-2 ring-primary/20' 
+                        : 'border-border hover:border-primary/60 bg-background hover:bg-primary/5 hover:shadow-sm'
+                      }
+                    `}
+                  >
+                    {/* Ripple effect background */}
+                    <div className={`
+                      absolute inset-0 bg-white/20 rounded-md scale-0 
+                      transition-transform duration-200 ease-out
+                      ${isAnimating ? 'scale-150' : ''}
+                    `} />
+                    
+                    <svg 
+                      className={`w-3 h-3 text-white transition-all duration-300 relative z-10 ${
+                        isChecked ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                      } ${isAnimating ? 'checkbox-check-animate' : ''}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={3} 
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </label>
+                </div>
                 <label 
                   htmlFor={element.id}
-                  className={`text-foreground cursor-pointer transition-all ${
-                    isChecked ? 'line-through opacity-75' : ''
+                  className={`text-foreground cursor-pointer transition-all duration-300 select-none ${
+                    isChecked ? 'line-through opacity-70' : 'group-hover:text-primary/80'
                   }`}
                 >
                   {renderInlineContent(element.content)}
