@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Sidebar } from './Sidebar'
 import { MainContent } from './MainContent'
 import { tutorialData } from '@/data/tutorialData'
+import { UserProfileService } from '@/services/userProfileService'
 
 export function WorkshopContent() {
   const [activeChapterId, setActiveChapterId] = useState(tutorialData.chapters[0].id)
@@ -9,6 +10,9 @@ export function WorkshopContent() {
   
   // Track chapter progress with localStorage persistence
   const [chapterProgress, setChapterProgress] = useState<Record<string, boolean>>({})
+  
+  // Get user profile for personalized content
+  const userProfile = UserProfileService.getUserProfile()
 
   // Load progress from localStorage on component mount
   useEffect(() => {
@@ -40,10 +44,16 @@ export function WorkshopContent() {
   const totalCount = tutorialData.chapters.length
   const progressPercentage = Math.round((completedCount / totalCount) * 100)
 
+  // Create personalized tutorial data with user's invitation link if available
+  const personalizedTutorial = userProfile ? {
+    ...tutorialData,
+    description: `Welcome ${userProfile.name}! Your workshop invitation: ${userProfile.invitationUrl}`
+  } : tutorialData
+
   return (
     <div className="flex h-full bg-background">
       <Sidebar
-        tutorial={tutorialData}
+        tutorial={personalizedTutorial}
         activeChapterId={activeChapterId}
         onChapterSelect={setActiveChapterId}
         chapterProgress={chapterProgress}

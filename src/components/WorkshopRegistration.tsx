@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,6 +8,8 @@ import { CheckCircle, ExclamationTriangle, Copy } from '@phosphor-icons/react'
 import { useKV } from '@github/spark/hooks'
 import { InvitationLink } from '@/types/invitation'
 import { InvitationService } from '@/services/invitationService'
+import { UserProfileService } from '@/services/userProfileService'
+import { UserProfile, RegistrationInfo } from '@/types/user'
 import { toast } from 'sonner'
 
 interface FormData {
@@ -25,12 +27,24 @@ export function WorkshopRegistration() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [invitationUrl, setInvitationUrl] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [registrationInfo, setRegistrationInfo] = useState<RegistrationInfo | null>(null)
   
   // Initialize invitation links with sample data
   const [invitations, setInvitations] = useKV<InvitationLink[]>(
     'workshop-invitations', 
     InvitationService.initializeSampleData()
   )
+
+  // Check for existing user registration on component mount
+  useEffect(() => {
+    const existingUser = UserProfileService.getUserProfile()
+    const existingRegistrationInfo = UserProfileService.getRegistrationInfo()
+    
+    if (existingUser && existingRegistrationInfo) {
+      setInvitationUrl(existingUser.invitationUrl)
+      setRegistrationInfo(existingRegistrationInfo)
+    }
+  }, [])
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -65,20 +79,46 @@ export function WorkshopRegistration() {
       userName
     )
     
+    let finalUrl = ''
+    let finalInvitations = updatedInvitations
+    
     if (resultUrl) {
-      setInvitations(updatedInvitations)
-      setInvitationUrl(resultUrl)
+      finalUrl = resultUrl
+      setInvitations(finalInvitations)
     } else {
       // No open invitations available - create a new one
       const newInvitation = InvitationService.createNewInvitation()
       const newInvitations = [...invitations, newInvitation]
-      const { updatedInvitations: finalInvitations, invitationUrl: finalUrl } = 
+      const { updatedInvitations: finalUpdatedInvitations, invitationUrl: finalResultUrl } = 
         InvitationService.registerUser(newInvitations, userName)
       
+      finalInvitations = finalUpdatedInvitations
+      finalUrl = finalResultUrl || ''
       setInvitations(finalInvitations)
-      setInvitationUrl(finalUrl || '')
     }
     
+    // Save user profile and registration info to localStorage
+    const userProfile: UserProfile = {
+      name: formData.name,
+      surname: formData.surname,
+      invitationUrl: finalUrl,
+      registrationDate: new Date().toISOString()
+    }
+    
+    const registeredCount = finalInvitations.filter(inv => inv.status === 'registered').length
+    const availableCount = finalInvitations.filter(inv => inv.status === 'open').length
+    
+    const registrationInfo: RegistrationInfo = {
+      user: userProfile,
+      registeredCount,
+      availableCount
+    }
+    
+    UserProfileService.saveUserProfile(userProfile)
+    UserProfileService.saveRegistrationInfo(registrationInfo)
+    
+    setInvitationUrl(finalUrl)
+    setRegistrationInfo(registrationInfo)
     setIsSubmitting(false)
   }
 
@@ -99,10 +139,15 @@ export function WorkshopRegistration() {
     }
   }
 
-  if (invitationUrl) {
-    const registeredCount = invitations.filter(inv => inv.status === 'registered').length
-    const availableCount = invitations.filter(inv => inv.status === 'open').length
-    
+  const handleNewRegistration = () => {
+    UserProfileService.clearUserData()
+    setInvitationUrl('')
+    setRegistrationInfo(null)
+    setFormData({ name: '', surname: '' })
+    toast.info('Ready for new registration')
+  }
+
+  if (invitationUrl && registrationInfo) {
     return (
       <div className="h-full bg-background flex items-center justify-center p-6">
         <Card className="w-full max-w-md relative">          
@@ -111,10 +156,10 @@ export function WorkshopRegistration() {
               <CheckCircle className="w-16 h-16 text-primary" weight="fill" />
             </div>
             <CardTitle className="text-2xl font-bold text-foreground">
-              Registration Successful!
+              Welcome back, {registrationInfo.user.name}!
             </CardTitle>
             <CardDescription>
-              Your spot in the n8n workshop has been reserved
+              Your spot in the n8n workshop is confirmed
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -136,9 +181,19 @@ export function WorkshopRegistration() {
                 </Button>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground text-center">
-              Use this invitation link to access the workshop. Save it for your records!
-            </p>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p className="text-center">Registered on: {new Date(registrationInfo.user.registrationDate).toLocaleDateString()}</p>
+              <p className="text-center">
+                Workshop Status: {registrationInfo.registeredCount}/{registrationInfo.registeredCount + registrationInfo.availableCount} spots filled
+              </p>
+            </div>
+            <Button 
+              onClick={handleNewRegistration}
+              variant="outline" 
+              className="w-full"
+            >
+              Register Another Person
+            </Button>
           </CardContent>
         </Card>
       </div>
