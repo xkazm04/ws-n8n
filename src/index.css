@@ -114,10 +114,11 @@
     transition: margin-right 300ms ease-in-out, width 300ms ease-in-out;
   }
   
-  /* Iframe styling */
-  iframe {
+  /* Demo GIF styling */
+  .demo-gif {
     border: none;
     outline: none;
+    border-radius: var(--radius);
   }
   
   /* Fullscreen overlay */

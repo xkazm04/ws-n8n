@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { CheckCircle, Circle, CaretLeft, CaretRight, ArrowLeft, Check, ArrowsOut, X } from '@phosphor-icons/react'
 import { Chapter, tutorialData } from '@/data/tutorialData'
 import { MarkdownRenderer } from './MarkdownRenderer'
+import { DEMO_GIF_CONFIG } from '@/config/demoGifs'
 import { cn } from '@/lib/utils'
 
 interface MainContentProps {
@@ -21,7 +22,7 @@ export function MainContent({
   sidebarCollapsed,
   onChapterSelect
 }: MainContentProps) {
-  const [iframeExpanded, setIframeExpanded] = useState(false)
+  const [demoExpanded, setDemoExpanded] = useState(true) // Show half-screen by default
   const [isFullscreen, setIsFullscreen] = useState(false)
   
   // Find current chapter index for navigation
@@ -51,15 +52,21 @@ export function MainContent({
   }
 
   const handleFullscreenToggle = () => {
-    setIsFullscreen(!isFullscreen)
-    if (!iframeExpanded) {
-      setIframeExpanded(true)
+    if (isFullscreen) {
+      setIsFullscreen(false)
+      setDemoExpanded(true) // Return to half-screen mode
+    } else {
+      setIsFullscreen(true)
     }
   }
 
   const handleCloseFullscreen = () => {
     setIsFullscreen(false)
+    setDemoExpanded(true) // Return to half-screen mode
   }
+
+  // Get demo GIF URL for current chapter
+  const demoGifUrl = DEMO_GIF_CONFIG[chapter.id] || DEMO_GIF_CONFIG['introduction']
 
   return (
     <>
@@ -67,7 +74,7 @@ export function MainContent({
         {/* Main Content Area */}
         <div className={cn(
           "flex-1 flex flex-col transition-all duration-300 ease-in-out",
-          iframeExpanded && !isFullscreen && "xl:mr-[50%]"
+          demoExpanded && !isFullscreen && "mr-[50%]"
         )}>
           {/* Chapter Header */}
           <div className="bg-card border-b border-border px-8 py-6">
@@ -144,30 +151,30 @@ export function MainContent({
           </div>
         </div>
 
-        {/* Iframe Toggle Button - Only show on xl+ screens */}
-        <div className="hidden xl:block absolute right-4 top-1/2 -translate-y-1/2 z-10">
+        {/* Demo Toggle Button */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setIframeExpanded(!iframeExpanded)}
+            onClick={() => setDemoExpanded(!demoExpanded)}
             className={cn(
               "transition-all duration-300 shadow-lg bg-card",
-              iframeExpanded && "rotate-180"
+              demoExpanded && "rotate-180"
             )}
           >
             <CaretLeft className="w-4 h-4" />
           </Button>
         </div>
 
-        {/* Embedded iframe panel - Only show on xl+ screens */}
+        {/* Demo GIF panel - Shows by default */}
         <div className={cn(
-          "hidden xl:block absolute top-0 right-0 h-full bg-card border-l border-border transition-all duration-300 ease-in-out z-20",
-          iframeExpanded && !isFullscreen ? "w-[50%] opacity-100" : "w-0 opacity-0 overflow-hidden"
+          "absolute top-0 right-0 h-full bg-card border-l border-border transition-all duration-300 ease-in-out z-20",
+          demoExpanded && !isFullscreen ? "w-[50%] opacity-100" : "w-0 opacity-0 overflow-hidden"
         )}>
-          {iframeExpanded && !isFullscreen && (
+          {demoExpanded && !isFullscreen && (
             <div className="h-full flex flex-col">
               <div className="bg-muted px-4 py-3 border-b border-border flex items-center justify-between">
-                <h3 className="text-sm font-medium text-foreground">n8n Interface</h3>
+                <h3 className="text-sm font-medium text-foreground">Demo Preview</h3>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -178,37 +185,51 @@ export function MainContent({
                   Fullscreen
                 </Button>
               </div>
-              <iframe
-                src="https://n8n-finance.groupondev.com/"
-                className="flex-1 w-full border-0"
-                title="n8n Interface"
-              />
+              <div className="flex-1 p-4 flex items-center justify-center bg-muted/20">
+                <img
+                  src={demoGifUrl}
+                  alt={`${chapter.title} demo`}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                />
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Fullscreen iframe overlay */}
+      {/* Fullscreen demo overlay */}
       {isFullscreen && (
         <div className="fixed inset-0 z-50 bg-background">
           <div className="h-full flex flex-col">
             <div className="bg-muted px-4 py-3 border-b border-border flex items-center justify-between">
-              <h3 className="text-sm font-medium text-foreground">n8n Interface - Fullscreen</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCloseFullscreen}
-                className="flex items-center gap-2 text-xs"
-              >
-                <X className="w-3 h-3" />
-                Close
-              </Button>
+              <h3 className="text-sm font-medium text-foreground">{chapter.title} Demo - Fullscreen</h3>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCloseFullscreen}
+                  className="flex items-center gap-2 text-xs"
+                >
+                  Half Screen
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsFullscreen(false)}
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <X className="w-3 h-3" />
+                  Close
+                </Button>
+              </div>
             </div>
-            <iframe
-              src="https://n8n-finance.groupondev.com/"
-              className="flex-1 w-full border-0"
-              title="n8n Interface - Fullscreen"
-            />
+            <div className="flex-1 p-8 flex items-center justify-center bg-muted/10">
+              <img
+                src={demoGifUrl}
+                alt={`${chapter.title} demo - fullscreen`}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              />
+            </div>
           </div>
         </div>
       )}
