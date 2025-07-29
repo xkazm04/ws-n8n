@@ -112,99 +112,89 @@ First, we need to establish a secure connection between n8n and your Gmail accou
       id: "ai-agent",
       title: "AI Agent",
       completed: false,
-      content: `# AI Agent Integration
+      content: `# AI Agent
 
-Enhance your workflows with intelligent AI agents that can understand, process, and respond to content automatically.
+Gemini analyzes email content to determine if action is required.
 
-## Understanding AI Agents in n8n
+**Option 1: AI Agent + Gemini Chat model**
 
-AI agents can analyze email content, extract information, make decisions, and generate responses - all automatically within your workflows.
+- Simplifies API setup into a predefined node
 
-### Supported AI Services
+**Option 2: Using HTTP Request Node (Alternative)**
 
-- **OpenAI (GPT-4, GPT-3.5)**
-- **Anthropic (Claude)**
-- **Google (Gemini)**
-- **Local LLMs (Ollama)**
+- Use if advance Gemini setup required (web search, advance API filtering)
+- Method: POST
+- URL**: https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent
+- Reference: [https://ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs)
 
-## Setting Up Your First AI Agent
+---
 
-### Step 1: Choose Your AI Service
+### **A. Add nodes to leverage LLM functionality**
 
-For this tutorial, we'll use OpenAI's GPT-4:
+- [ ]  Add **AI Agent** node
+- [ ]  Add **Gemini Chat Model** to the node
+    - [ ]  Preconditions: Added Gemini credentials  - [Gemini AI](https://coda.io/d/_d3PFXo2bENf/_surMv)
 
-\`\`\`javascript
-// OpenAI node configuration
-{
-  "model": "gpt-4",
-  "temperature": 0.7,
-  "maxTokens": 500,
-  "systemMessage": "You are a helpful email assistant."
-}
+<aside>
+💡
+
+**Gemini Chat Model** can be replaced by other providers to test their capabilties (**OpenAI**, **Claude, Perplexity**, …)
+
+</aside>
+
+### **B. Passing the prompt**
+
+- *reference: [https://services.google.com/fh/files/misc/gemini-for-google-workspace-prompting-guide-101.pdf](https://services.google.com/fh/files/misc/gemini-for-google-workspace-prompting-guide-101.pdf)*
+- [ ]  Add Prompt directly into the AI Agent node
+- [ ]  **Source for Prompt** = Pass prompt defined below ****with mapped fields from precessor
+
+Drag and drop values from predecessor directly to the prompt
+
+- subject → Email Subject
+- text -> Email Body
+- from.value.value[0].address → From
+
+\`\`\`markdown
+# Prompt instructions
+Analyze this email and determine if it requires action from the recipient.
+- Email Subject: {{ $json.subject }}
+- Email Body: {{ $json.text }}
+- From: {{ $json.from.value[0].name }} - {{ $json.from.value[0].address }}
+
+Respond with only **"ACTION_REQUIRED"** or **"NO_ACTION"** and a brief reason.
+
+Consider these as requiring action:
+- Questions directed at recipient
+- Requests for information, approval, or tasks
+- Meeting invitations requiring response
+- Urgent matters or deadlines
+
+Consider these as NOT requiring action:
+- FYI/informational emails
+- Newsletters or announcements
+- Auto-generated notifications
+- Simple acknowledgments
+
 \`\`\`
 
-### Step 2: Create Intelligent Email Processing
+*prompt example*
 
-Let's create an AI agent that categorizes incoming emails:
+[image.png](https://codahosted.io/docs/3PFXo2bENf/blobs/bl-WRzkrs-mR6/99fb29aa18a091ff56582f3f9e3617bc7104c8e78a64b01afe5cd6dc3dd8cfade0abdf7433eaf731f78a3fbee61779638cbf7a9373f44afaeb88126a67a28c749dd21ee0266a732838d581fde3fd47f4c69ae8c0c0f24d4577c58614ddd94a4c00109795)
 
-\`\`\`javascript
-// Prompt template for email categorization
-const prompt = \`
-Analyze this email and categorize it:
+*mapping workflow attributes into a node expression*
 
-Subject: {{$node["Gmail"].json["subject"]}}
-From: {{$node["Gmail"].json["from"]}}
-Body: {{$node["Gmail"].json["body"]}}
+---
 
-Categories: urgent, sales, support, billing, general
+<aside>
+💡
 
-Return only the category name.
-\`;
-\`\`\`
+**Tips**
 
-## Advanced AI Agent Patterns
+- Add **token limit** to the chat model to prevent costly runs
+- Use **output parser** with another chat model inside in case very specific output format needed
+</aside>
 
-### 1. Content Extraction Agent
-Extract key information from emails automatically:
-
-- **Invoice details** (amount, due date, vendor)
-- **Meeting requests** (time, attendees, agenda)
-- **Support tickets** (issue type, priority, customer info)
-
-### 2. Response Generation Agent
-Generate contextual responses based on email content:
-
-\`\`\`javascript
-// Response generation prompt
-const responsePrompt = \`
-Generate a professional response to this email:
-Original: {{$node["Gmail"].json["body"]}}
-
-Requirements:
-- Acknowledge the sender's request
-- Provide helpful information
-- Maintain professional tone
-- Keep under 200 words
-\`;
-\`\`\`
-
-### 3. Decision-Making Agent
-Create agents that make routing decisions:
-
-- [ ] Route urgent emails to specific team members
-- [ ] Escalate high-priority issues automatically
-- [ ] Schedule follow-ups based on email content
-
-## Testing Your AI Agent
-
-Always test with sample data first:
-
-1. **Use test emails** with known outcomes
-2. **Validate AI responses** for accuracy
-3. **Monitor token usage** to control costs
-4. **Set up fallback logic** for edge cases
-
-**Pro Tip**: Start with simple categorization before building complex agents!`
+### Optional: Output parsing using LLM`
     },
     {
       id: "email-states",

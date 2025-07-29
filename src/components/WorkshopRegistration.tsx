@@ -139,14 +139,6 @@ export function WorkshopRegistration() {
     }
   }
 
-  const handleNewRegistration = () => {
-    UserProfileService.clearUserData()
-    setInvitationUrl('')
-    setRegistrationInfo(null)
-    setFormData({ name: '', surname: '' })
-    toast.info('Ready for new registration')
-  }
-
   if (invitationUrl && registrationInfo) {
     return (
       <div className="h-full bg-background flex items-center justify-center p-6">
@@ -187,13 +179,6 @@ export function WorkshopRegistration() {
                 Workshop Status: {registrationInfo.registeredCount}/{registrationInfo.registeredCount + registrationInfo.availableCount} spots filled
               </p>
             </div>
-            <Button 
-              onClick={handleNewRegistration}
-              variant="outline" 
-              className="w-full"
-            >
-              Register Another Person
-            </Button>
           </CardContent>
         </Card>
       </div>

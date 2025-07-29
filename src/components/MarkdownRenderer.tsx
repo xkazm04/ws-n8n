@@ -7,7 +7,7 @@ interface MarkdownRendererProps {
 }
 
 interface ParsedElement {
-  type: 'header' | 'paragraph' | 'code' | 'list' | 'checkbox' | 'bold' | 'link' | 'inline-code'
+  type: 'header' | 'paragraph' | 'code' | 'list' | 'checkbox' | 'bold' | 'link' | 'inline-code' | 'aside'
   content: string
   level?: number
   language?: string
@@ -61,8 +61,24 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         continue
       }
 
+      // Aside blocks (tip boxes)
+      if (line === '<aside>') {
+        flushList()
+        let asideContent = ''
+        i++
+        
+        while (i < lines.length && lines[i].trim() !== '</aside>') {
+          asideContent += lines[i] + '\n'
+          i++
+        }
+        
+        elements.push({
+          type: 'aside',
+          content: asideContent.trim()
+        })
+      }
       // Headers
-      if (line.startsWith('###')) {
+      else if (line.startsWith('###')) {
         flushList()
         elements.push({
           type: 'header',
@@ -233,6 +249,29 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                   </li>
                 ))}
               </ul>
+            )
+
+          case 'aside':
+            return (
+              <div key={index} className="my-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1">
+                    <span className="text-blue-600 text-sm font-semibold">💡</span>
+                  </div>
+                  <div className="text-blue-800 space-y-2 flex-1">
+                    {element.content.split('\n').map((line, lineIndex) => {
+                      const trimmedLine = line.trim()
+                      if (!trimmedLine) return null
+                      
+                      return (
+                        <p key={lineIndex} className="leading-relaxed">
+                          {renderInlineContent(trimmedLine)}
+                        </p>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
             )
 
           case 'paragraph':

@@ -16,7 +16,7 @@ export const DEMO_GIF_CONFIG: Record<string, string> = {
   'gmail': 'https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif',
   
   // AI Agent chapter - setting up AI automation
-  'ai-agent': 'https://media.giphy.com/media/l46Cy1rHbQ92uuLXa/giphy.gif',
+  'ai-agent': '/demo-gifs/ai_agent.gif',
   
   // Email states chapter - managing email flow states
   'email-states': 'https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif',
