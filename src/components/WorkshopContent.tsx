@@ -3,6 +3,9 @@ import { Sidebar } from './Sidebar'
 import { MainContent } from './MainContent'
 import { tutorialData } from '@/data/tutorialData'
 import { UserProfileService } from '@/services/userProfileService'
+import { Button } from '@/components/ui/button'
+import { Copy } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 
 export function WorkshopContent() {
   const [activeChapterId, setActiveChapterId] = useState(tutorialData.chapters[0].id)
@@ -44,10 +47,32 @@ export function WorkshopContent() {
   const totalCount = tutorialData.chapters.length
   const progressPercentage = Math.round((completedCount / totalCount) * 100)
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success('Invitation link copied to clipboard!')
+    } catch (err) {
+      toast.error('Failed to copy link')
+    }
+  }
+
   // Create personalized tutorial data with user's invitation link if available
   const personalizedTutorial = userProfile ? {
     ...tutorialData,
-    description: `Welcome ${userProfile.name}! Your workshop invitation: ${userProfile.invitationUrl}`
+    description: (
+      <div className="flex items-center gap-3">
+        <span>Welcome {userProfile.name}! Your workshop invitation:</span>
+        <Button
+          onClick={() => copyToClipboard(userProfile.invitationUrl)}
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2 text-xs"
+        >
+          <Copy className="w-3 h-3" />
+          Copy Link
+        </Button>
+      </div>
+    )
   } : tutorialData
 
   return (

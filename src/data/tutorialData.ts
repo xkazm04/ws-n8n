@@ -1,3 +1,4 @@
+import React from 'react'
 import aiAgentMd from './ai-agent.md?raw'
 
 export interface Chapter {
@@ -9,7 +10,7 @@ export interface Chapter {
 
 export interface Tutorial {
   title: string
-  description: string
+  description: string | React.ReactNode
   chapters: Chapter[]
 }
 

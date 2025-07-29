@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { CheckCircle, Circle, CaretLeft, CaretRight, ArrowLeft, Check, ArrowsOut, X } from '@phosphor-icons/react'
+import { CheckCircle, Circle, CaretLeft, CaretRight, ArrowLeft, Check, GripVertical } from '@phosphor-icons/react'
 import { Chapter, tutorialData } from '@/data/tutorialData'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { DEMO_GIF_CONFIG } from '@/config/demoGifs'
@@ -23,7 +23,9 @@ export function MainContent({
   onChapterSelect
 }: MainContentProps) {
   const [demoExpanded, setDemoExpanded] = useState(true) // Show half-screen by default
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [demoWidth, setDemoWidth] = useState(50) // Percentage width
+  const [isResizing, setIsResizing] = useState(false)
+  const resizeRef = useRef<HTMLDivElement>(null)
   
   // Find current chapter index for navigation
   const currentIndex = tutorialData.chapters.findIndex(ch => ch.id === chapter.id)
@@ -31,6 +33,46 @@ export function MainContent({
   const hasNextChapter = currentIndex < tutorialData.chapters.length - 1
   const previousChapter = hasPreviousChapter ? tutorialData.chapters[currentIndex - 1] : null
   const nextChapter = hasNextChapter ? tutorialData.chapters[currentIndex + 1] : null
+
+  // Resize handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+  }, [])
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizing || !resizeRef.current) return
+
+    const container = resizeRef.current.parentElement
+    if (!container) return
+
+    const containerRect = container.getBoundingClientRect()
+    const mouseX = e.clientX - containerRect.left
+    const newWidth = Math.max(20, Math.min(80, ((containerRect.width - mouseX) / containerRect.width) * 100))
+    
+    setDemoWidth(newWidth)
+  }, [isResizing])
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false)
+  }, [])
+
+  // Add event listeners for resize
+  React.useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
+    }
+  }, [isResizing, handleMouseMove, handleMouseUp])
 
   const goToPreviousChapter = () => {
     if (previousChapter) {
@@ -51,188 +93,146 @@ export function MainContent({
     }
   }
 
-  const handleFullscreenToggle = () => {
-    if (isFullscreen) {
-      setIsFullscreen(false)
-      setDemoExpanded(true) // Return to half-screen mode
-    } else {
-      setIsFullscreen(true)
-    }
-  }
-
-  const handleCloseFullscreen = () => {
-    setIsFullscreen(false)
-    setDemoExpanded(true) // Return to half-screen mode
-  }
-
   // Get demo GIF URL for current chapter
   const demoGifUrl = DEMO_GIF_CONFIG[chapter.id] || DEMO_GIF_CONFIG['introduction']
 
   return (
-    <>
-      <div className="flex-1 flex relative">
-        {/* Main Content Area */}
-        <div className={cn(
-          "flex-1 flex flex-col transition-all duration-300 ease-in-out",
-          demoExpanded && !isFullscreen && "mr-[50%]"
-        )}>
-          {/* Chapter Header */}
-          <div className="bg-card border-b border-border px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <h1 className="text-2xl font-bold text-foreground">
-                  {chapter.title}
-                </h1>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                {isCompleted && (
-                  <div className="flex items-center gap-2 text-primary text-sm font-medium">
-                    <CheckCircle className="w-4 h-4" weight="fill" />
-                    Completed
-                  </div>
-                )}
-              </div>
+    <div className="flex-1 flex relative" ref={resizeRef}>
+      {/* Main Content Area */}
+      <div className={cn(
+        "flex flex-col transition-all duration-300 ease-in-out",
+        demoExpanded ? `w-[${100 - demoWidth}%]` : "w-full"
+      )} style={{ width: demoExpanded ? `${100 - demoWidth}%` : '100%' }}>
+        {/* Chapter Header */}
+        <div className="bg-card border-b border-border px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold text-foreground">
+                {chapter.title}
+              </h1>
             </div>
-          </div>
-
-          {/* Content Area */}
-          <ScrollArea className="flex-1 h-full">
-            <div className={cn(
-              "max-w-4xl mx-auto px-8 py-8 pb-24 min-h-full",
-              sidebarCollapsed && "max-w-5xl"
-            )}>
-              <MarkdownRenderer content={chapter.content} />
-            </div>
-          </ScrollArea>
-
-          {/* Bottom Navigation */}
-          <div className="bg-card border-t border-border px-8 py-4">
-            <div className={cn(
-              "max-w-4xl mx-auto flex items-center justify-between",
-              sidebarCollapsed && "max-w-5xl"
-            )}>
-              <div>
-                {hasPreviousChapter && (
-                  <Button
-                    variant="outline"
-                    onClick={goToPreviousChapter}
-                    className="flex items-center gap-2"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back
-                  </Button>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-3">
-                {!isCompleted && (
-                  <Button
-                    onClick={handleCompleteAndNext}
-                    className="flex items-center gap-2"
-                  >
-                    <Check className="w-4 h-4" />
-                    Complete
-                    {hasNextChapter && <span className="text-xs opacity-75">& Continue</span>}
-                  </Button>
-                )}
-                
-                {isCompleted && hasNextChapter && (
-                  <Button
-                    onClick={goToNextChapter}
-                    className="flex items-center gap-2"
-                  >
-                    Next Chapter
-                    <CaretRight className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
+            
+            <div className="flex items-center gap-2">
+              {isCompleted && (
+                <div className="flex items-center gap-2 text-primary text-sm font-medium">
+                  <CheckCircle className="w-4 h-4" weight="fill" />
+                  Completed
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Demo Toggle Button */}
+        {/* Content Area */}
+        <ScrollArea className="flex-1 h-full">
+          <div className={cn(
+            "max-w-4xl mx-auto px-8 py-8 pb-24 min-h-full",
+            sidebarCollapsed && "max-w-5xl"
+          )}>
+            <MarkdownRenderer content={chapter.content} />
+          </div>
+        </ScrollArea>
+
+        {/* Bottom Navigation */}
+        <div className="bg-card border-t border-border px-8 py-4">
+          <div className={cn(
+            "max-w-4xl mx-auto flex items-center justify-between",
+            sidebarCollapsed && "max-w-5xl"
+          )}>
+            <div>
+              {hasPreviousChapter && (
+                <Button
+                  variant="outline"
+                  onClick={goToPreviousChapter}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </Button>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {!isCompleted && (
+                <Button
+                  onClick={handleCompleteAndNext}
+                  className="flex items-center gap-2"
+                >
+                  <Check className="w-4 h-4" />
+                  Complete
+                  {hasNextChapter && <span className="text-xs opacity-75">& Continue</span>}
+                </Button>
+              )}
+              
+              {isCompleted && hasNextChapter && (
+                <Button
+                  onClick={goToNextChapter}
+                  className="flex items-center gap-2"
+                >
+                  Next Chapter
+                  <CaretRight className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Resizable Demo Panel */}
+      {demoExpanded && (
+        <>
+          {/* Resize Handle */}
+          <div
+            className={cn(
+              "w-1 bg-border hover:bg-primary/50 cursor-col-resize transition-colors flex items-center justify-center group",
+              isResizing && "bg-primary"
+            )}
+            onMouseDown={handleMouseDown}
+          >
+            <GripVertical className="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors" />
+          </div>
+
+          {/* Demo Content */}
+          <div
+            className="bg-card border-l border-border flex flex-col"
+            style={{ width: `${demoWidth}%` }}
+          >
+            <div className="bg-muted px-4 py-3 border-b border-border flex items-center justify-between">
+              <h3 className="text-sm font-medium text-foreground">Demo Preview</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDemoExpanded(false)}
+                className="flex items-center gap-2 text-xs"
+              >
+                <CaretRight className="w-3 h-3" />
+                Hide
+              </Button>
+            </div>
+            <div className="flex-1 p-4 flex items-center justify-center bg-muted/20 overflow-hidden">
+              <img
+                src={demoGifUrl}
+                alt={`${chapter.title} demo`}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Demo Toggle Button (when collapsed) */}
+      {!demoExpanded && (
         <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setDemoExpanded(!demoExpanded)}
-            className={cn(
-              "transition-all duration-300 shadow-lg bg-card",
-              demoExpanded && "rotate-180"
-            )}
+            onClick={() => setDemoExpanded(true)}
+            className="shadow-lg bg-card"
           >
             <CaretLeft className="w-4 h-4" />
           </Button>
         </div>
-
-        {/* Demo GIF panel - Shows by default */}
-        <div className={cn(
-          "absolute top-0 right-0 h-full bg-card border-l border-border transition-all duration-300 ease-in-out z-20",
-          demoExpanded && !isFullscreen ? "w-[50%] opacity-100" : "w-0 opacity-0 overflow-hidden"
-        )}>
-          {demoExpanded && !isFullscreen && (
-            <div className="h-full flex flex-col">
-              <div className="bg-muted px-4 py-3 border-b border-border flex items-center justify-between">
-                <h3 className="text-sm font-medium text-foreground">Demo Preview</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleFullscreenToggle}
-                  className="flex items-center gap-2 text-xs"
-                >
-                  <ArrowsOut className="w-3 h-3" />
-                  Fullscreen
-                </Button>
-              </div>
-              <div className="flex-1 p-4 flex items-center justify-center bg-muted/20">
-                <img
-                  src={demoGifUrl}
-                  alt={`${chapter.title} demo`}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Fullscreen demo overlay */}
-      {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-background">
-          <div className="h-full flex flex-col">
-            <div className="bg-muted px-4 py-3 border-b border-border flex items-center justify-between">
-              <h3 className="text-sm font-medium text-foreground">{chapter.title} Demo - Fullscreen</h3>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCloseFullscreen}
-                  className="flex items-center gap-2 text-xs"
-                >
-                  Half Screen
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsFullscreen(false)}
-                  className="flex items-center gap-2 text-xs"
-                >
-                  <X className="w-3 h-3" />
-                  Close
-                </Button>
-              </div>
-            </div>
-            <div className="flex-1 p-8 flex items-center justify-center bg-muted/10">
-              <img
-                src={demoGifUrl}
-                alt={`${chapter.title} demo - fullscreen`}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-              />
-            </div>
-          </div>
-        </div>
       )}
-    </>
+    </div>
   )
 }

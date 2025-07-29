@@ -61,9 +61,13 @@ export function Sidebar({
           </Button>
         </div>
         
-        <p className="text-sm text-muted-foreground mb-4">
-          {tutorial.description}
-        </p>
+        <div className="text-sm text-muted-foreground mb-4">
+          {typeof tutorial.description === 'string' ? (
+            tutorial.description
+          ) : (
+            tutorial.description
+          )}
+        </div>
         
         {/* Progress Overview */}
         <div className="space-y-3">

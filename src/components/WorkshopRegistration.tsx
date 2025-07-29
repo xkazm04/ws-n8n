@@ -160,24 +160,19 @@ export function WorkshopRegistration() {
                 Workshop Invitation Link
               </Label>
               <div className="flex items-center gap-2">
-                <p className="font-mono text-sm text-foreground break-all flex-1 p-2 bg-background rounded border">
-                  {invitationUrl}
-                </p>
                 <Button
                   onClick={() => copyToClipboard(invitationUrl)}
                   variant="outline"
                   size="sm"
-                  className="shrink-0"
+                  className="flex items-center gap-2"
                 >
                   <Copy className="w-4 h-4" />
+                  Copy Link
                 </Button>
               </div>
             </div>
-            <div className="text-sm text-muted-foreground space-y-1">
+            <div className="text-sm text-muted-foreground">
               <p className="text-center">Registered on: {new Date(registrationInfo.user.registrationDate).toLocaleDateString()}</p>
-              <p className="text-center">
-                Workshop Status: {registrationInfo.registeredCount}/{registrationInfo.registeredCount + registrationInfo.availableCount} spots filled
-              </p>
             </div>
           </CardContent>
         </Card>
