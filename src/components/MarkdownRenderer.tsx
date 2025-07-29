@@ -1,13 +1,14 @@
 import { useState, useMemo } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { Copy, Check } from '@phosphor-icons/react'
 
 interface MarkdownRendererProps {
   content: string
 }
 
 interface ParsedElement {
-  type: 'header' | 'paragraph' | 'code' | 'list' | 'checkbox' | 'bold' | 'link' | 'inline-code' | 'aside'
+  type: 'header' | 'paragraph' | 'code' | 'list' | 'checkbox' | 'bold' | 'link' | 'inline-code' | 'aside' | 'divider'
   content: string
   level?: number
   language?: string
@@ -36,7 +37,17 @@ const customCodeTheme = {
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const [checkboxStates, setCheckboxStates] = useState<Record<string, boolean>>({})
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
+  const copyToClipboard = async (text: string, codeId: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedCode(codeId)
+      setTimeout(() => setCopiedCode(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy text: ', err)
+    }
+  }
   const parsedElements = useMemo(() => {
     const lines = content.split('\n')
     const elements: ParsedElement[] = []
@@ -61,8 +72,16 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         continue
       }
 
+      // Divider
+      if (line === '---') {
+        flushList()
+        elements.push({
+          type: 'divider',
+          content: ''
+        })
+      }
       // Aside blocks (tip boxes)
-      if (line === '<aside>') {
+      else if (line === '<aside>') {
         flushList()
         let asideContent = ''
         i++
@@ -162,8 +181,19 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   }
 
   const renderInlineContent = (text: string) => {
-    // Bold text
+    // Process in order: bold first, then italic (since bold uses ** and italic uses *)
+    // Bold text - match **text** and replace with <strong> without showing the asterisks
     let processed = text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+    
+    // Italic text - Simple approach: replace single * that isn't preceded or followed by another *
+    // Split by existing <strong> tags to avoid affecting already processed bold text
+    const parts = processed.split(/(<strong[^>]*>.*?<\/strong>)/g)
+    processed = parts.map(part => {
+      if (part.includes('<strong')) {
+        return part // Don't process parts that contain bold tags
+      }
+      return part.replace(/\*([^*\n]+?)\*/g, '<em class="italic">$1</em>')
+    }).join('')
     
     // Inline code
     processed = processed.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">$1</code>')
@@ -192,10 +222,29 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             )
 
           case 'code':
+            const codeId = `code-${index}`
+            const isCopied = copiedCode === codeId
             return (
-              <div key={index} className="my-6 rounded-lg border border-border bg-card/50 overflow-hidden shadow-sm">
-                <div className="px-4 py-2 bg-muted/50 border-b border-border text-xs font-mono text-muted-foreground">
-                  {element.language}
+              <div key={index} className="my-6 rounded-lg border border-border bg-card/50 overflow-hidden shadow-sm relative">
+                <div className="px-4 py-2 bg-muted/50 border-b border-border text-xs font-mono text-muted-foreground flex justify-between items-center">
+                  <span>{element.language}</span>
+                  <button
+                    onClick={() => copyToClipboard(element.content, codeId)}
+                    className="flex items-center gap-1.5 px-2 py-1 text-xs bg-background/80 border border-border rounded hover:bg-background transition-all duration-200 hover:shadow-sm"
+                    title={isCopied ? "Copied!" : "Copy code"}
+                  >
+                    {isCopied ? (
+                      <>
+                        <Check size={14} className="text-green-600" />
+                        <span className="text-green-600 font-medium">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={14} className="text-muted-foreground" />
+                        <span className="text-muted-foreground">Copy</span>
+                      </>
+                    )}
+                  </button>
                 </div>
                 <SyntaxHighlighter
                   language={element.language}
@@ -272,6 +321,11 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                   </div>
                 </div>
               </div>
+            )
+
+          case 'divider':
+            return (
+              <hr key={index} className="my-8 border-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
             )
 
           case 'paragraph':
