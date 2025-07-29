@@ -45,6 +45,7 @@ export function WorkshopContent() {
         onToggleProgress={toggleChapterProgress}
         isCompleted={chapterProgress[activeChapterId] || false}
         sidebarCollapsed={sidebarCollapsed}
+        onChapterSelect={setActiveChapterId}
       />
     </div>
   )

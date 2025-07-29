@@ -108,4 +108,15 @@
     overflow-y: auto;
     max-height: 100%;
   }
+  
+  /* Smooth transitions for layout changes */
+  .transition-layout {
+    transition: margin-right 300ms ease-in-out, width 300ms ease-in-out;
+  }
+  
+  /* Iframe styling */
+  iframe {
+    border: none;
+    outline: none;
+  }
 }
