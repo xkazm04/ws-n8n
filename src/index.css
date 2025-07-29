@@ -102,4 +102,10 @@
   .prose pre {
     font-family: var(--font-mono), ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   }
+  
+  /* Ensure proper scrolling in content areas */
+  [data-slot="scroll-area-viewport"] {
+    overflow-y: auto;
+    max-height: 100%;
+  }
 }

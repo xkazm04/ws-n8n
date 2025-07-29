@@ -10,11 +10,13 @@ function App() {
     const [currentRoute, setCurrentRoute] = useState<Route>('registration')
 
     return (
-        <>
+        <div className="min-h-screen bg-background">
             <TopNavigation currentRoute={currentRoute} onRouteChange={setCurrentRoute} />
-            {currentRoute === 'registration' ? <WorkshopRegistration /> : <WorkshopContent />}
+            <div className="h-[calc(100vh-4rem)]">
+                {currentRoute === 'registration' ? <WorkshopRegistration /> : <WorkshopContent />}
+            </div>
             <Toaster />
-        </>
+        </div>
     )
 }
 

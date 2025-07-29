@@ -28,7 +28,7 @@ export function WorkshopContent() {
   const progressPercentage = Math.round((completedCount / totalCount) * 100)
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-background overflow-hidden">
+    <div className="flex h-full bg-background">
       <Sidebar
         tutorial={tutorialData}
         activeChapterId={activeChapterId}

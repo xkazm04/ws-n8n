@@ -54,14 +54,12 @@ export function MainContent({
       </div>
 
       {/* Content Area */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 h-full">
         <div className={cn(
-          "max-w-4xl mx-auto px-8 py-8",
+          "max-w-4xl mx-auto px-8 py-8 min-h-full",
           sidebarCollapsed && "max-w-5xl"
         )}>
-          <div className="prose prose-gray max-w-none">
-            <MarkdownRenderer content={chapter.content} />
-          </div>
+          <MarkdownRenderer content={chapter.content} />
         </div>
       </ScrollArea>
     </div>
