@@ -1,18 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Sidebar } from './Sidebar'
 import { MainContent } from './MainContent'
 import { tutorialData } from '@/data/tutorialData'
-import { useKV } from '@github/spark/hooks'
 
 export function WorkshopContent() {
   const [activeChapterId, setActiveChapterId] = useState(tutorialData.chapters[0].id)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   
-  // Track chapter progress with persistence
-  const [chapterProgress, setChapterProgress] = useKV<Record<string, boolean>>(
-    'workshop-chapter-progress',
-    {}
-  )
+  // Track chapter progress with localStorage persistence
+  const [chapterProgress, setChapterProgress] = useState<Record<string, boolean>>({})
+
+  // Load progress from localStorage on component mount
+  useEffect(() => {
+    const savedProgress = localStorage.getItem('workshop-chapter-progress')
+    if (savedProgress) {
+      try {
+        setChapterProgress(JSON.parse(savedProgress))
+      } catch (error) {
+        console.error('Error loading progress from localStorage:', error)
+      }
+    }
+  }, [])
+
+  // Save progress to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('workshop-chapter-progress', JSON.stringify(chapterProgress))
+  }, [chapterProgress])
 
   const toggleChapterProgress = (chapterId: string) => {
     setChapterProgress(prev => ({
