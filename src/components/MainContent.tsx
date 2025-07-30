@@ -22,10 +22,19 @@ export function MainContent({
   sidebarCollapsed,
   onChapterSelect
 }: MainContentProps) {
-  const [demoExpanded, setDemoExpanded] = useState(true) // Show half-screen by default
+  // Check if current chapter has a demo GIF available
+  const demoGifUrl = DEMO_GIF_CONFIG[chapter.id]
+  const hasDemoGif = Boolean(demoGifUrl)
+  
+  const [demoExpanded, setDemoExpanded] = useState(hasDemoGif) // Show demo panel only if GIF exists
   const [demoWidth, setDemoWidth] = useState(50) // Percentage width
   const [isResizing, setIsResizing] = useState(false)
   const resizeRef = useRef<HTMLDivElement>(null)
+  
+  // Update demo expansion state when chapter changes
+  React.useEffect(() => {
+    setDemoExpanded(hasDemoGif)
+  }, [hasDemoGif])
   
   // Find current chapter index for navigation
   const currentIndex = tutorialData.chapters.findIndex(ch => ch.id === chapter.id)
@@ -93,16 +102,13 @@ export function MainContent({
     }
   }
 
-  // Get demo GIF URL for current chapter
-  const demoGifUrl = DEMO_GIF_CONFIG[chapter.id] || DEMO_GIF_CONFIG['introduction']
-
   return (
     <div className="flex-1 flex relative" ref={resizeRef}>
       {/* Main Content Area */}
       <div className={cn(
         "flex flex-col transition-all duration-300 ease-in-out",
-        demoExpanded ? `w-[${100 - demoWidth}%]` : "w-full"
-      )} style={{ width: demoExpanded ? `${100 - demoWidth}%` : '100%' }}>
+        hasDemoGif && demoExpanded ? `w-[${100 - demoWidth}%]` : "w-full"
+      )} style={{ width: hasDemoGif && demoExpanded ? `${100 - demoWidth}%` : '100%' }}>
         {/* Chapter Header */}
         <div className="bg-card border-b border-border px-8 py-6">
           <div className="flex items-center justify-between">
@@ -178,8 +184,8 @@ export function MainContent({
         </div>
       </div>
 
-      {/* Resizable Demo Panel */}
-      {demoExpanded && (
+      {/* Resizable Demo Panel - only show if GIF is available */}
+      {hasDemoGif && demoExpanded && (
         <>
           {/* Resize Handle */}
           <div
@@ -220,8 +226,8 @@ export function MainContent({
         </>
       )}
 
-      {/* Demo Toggle Button (when collapsed) */}
-      {!demoExpanded && (
+      {/* Demo Toggle Button (when collapsed) - only show if GIF is available */}
+      {hasDemoGif && !demoExpanded && (
         <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
           <Button
             variant="outline"
