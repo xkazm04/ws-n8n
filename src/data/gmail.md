@@ -32,7 +32,7 @@ Send an email to yourself an email and fetch it
 
 To prevent re-sending the same email, Gmail node can be used to fetch the latest received email, or filterd by specific criteria
 
-[image.png](https://codahosted.io/docs/3PFXo2bENf/blobs/bl-z212nBYiMT/3c5ed3479b90a822429419f08ffab5fa0cdae758d289ffe4bd2390a479023b52a3627d3983667c71aa3a9215b12acea250a186907ad2e0fb1337e2716696831cbcc0716879dec3d0aceab087b002cd56f80d99fea0c1f19444f6661621bc22f53cd012fe)
+[gmail](https://codaio.imgix.net/docs/3PFXo2bENf/blobs/bl-z212nBYiMT/3c5ed3479b90a822429419f08ffab5fa0cdae758d289ffe4bd2390a479023b52a3627d3983667c71aa3a9215b12acea250a186907ad2e0fb1337e2716696831cbcc0716879dec3d0aceab087b002cd56f80d99fea0c1f19444f6661621bc22f53cd012fe?fit=max&fm=webp&lossless=true)
 
 <aside>
 💡

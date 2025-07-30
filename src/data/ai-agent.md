@@ -1,6 +1,7 @@
 # AI Agent
 
 Gemini analyzes email content to determine if action is required.
+[prompt_wf](https://codaio.imgix.net/docs/3PFXo2bENf/blobs/bl-aGGkcB4Nvn/d43663275387da7b3f811eb99c0746b3f9234c54f4444227d8bbf084078b70432a3f5668c47967604f663d2d0190e6a85d529bbbe1e01278b411fe9385db3d6c903e8038ba5cdef53f75b83e6b239f875273c5afc9a1c90d106800bee8f06bc4a91d525b?fit=max&fm=webp&lossless=true)
 
 **Option 1: AI Agent + Gemini Chat model**
 
@@ -63,11 +64,9 @@ Consider these as NOT requiring action:
 
 ```
 
-*prompt example*
+**Prompt mapping example**
+[prompt.png](https://codaio.imgix.net/docs/3PFXo2bENf/blobs/bl-WRzkrs-mR6/99fb29aa18a091ff56582f3f9e3617bc7104c8e78a64b01afe5cd6dc3dd8cfade0abdf7433eaf731f78a3fbee61779638cbf7a9373f44afaeb88126a67a28c749dd21ee0266a732838d581fde3fd47f4c69ae8c0c0f24d4577c58614ddd94a4c00109795?fit=max&fm=webp&lossless=true)
 
-[image.png](https://codahosted.io/docs/3PFXo2bENf/blobs/bl-WRzkrs-mR6/99fb29aa18a091ff56582f3f9e3617bc7104c8e78a64b01afe5cd6dc3dd8cfade0abdf7433eaf731f78a3fbee61779638cbf7a9373f44afaeb88126a67a28c749dd21ee0266a732838d581fde3fd47f4c69ae8c0c0f24d4577c58614ddd94a4c00109795)
-
-*mapping workflow attributes into a node expression*
 
 ---
 
