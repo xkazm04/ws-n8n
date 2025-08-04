@@ -15,7 +15,7 @@ export class InvitationService {
     return `ws${index}@groupon.com`;
   }
 
-  // Initialize some sample invitation links
+  // Initialize sample invitation links with hardcoded login emails
   static initializeSampleData(): InvitationLink[] {
     const sampleLinks: InvitationLink[] = [
       {
@@ -23,7 +23,7 @@ export class InvitationService {
         link: this.generateInvitationUrl('inv_sample1'),
         status: 'open',
         user: null,
-        loginEmail: this.generateLoginEmail(1),
+        loginEmail: 'ws1@groupon.com',
         createdAt: new Date('2024-01-15'),
       },
       {
@@ -31,7 +31,7 @@ export class InvitationService {
         link: this.generateInvitationUrl('inv_sample2'),
         status: 'open',
         user: null,
-        loginEmail: this.generateLoginEmail(2),
+        loginEmail: 'ws2@groupon.com',
         createdAt: new Date('2024-01-16'),
       },
       {
@@ -39,9 +39,49 @@ export class InvitationService {
         link: this.generateInvitationUrl('inv_sample3'),
         status: 'registered',
         user: 'John Doe',
-        loginEmail: this.generateLoginEmail(3),
+        loginEmail: 'ws3@groupon.com',
         createdAt: new Date('2024-01-14'),
         registeredAt: new Date('2024-01-17'),
+      },
+      {
+        id: 'inv_sample4',
+        link: this.generateInvitationUrl('inv_sample4'),
+        status: 'open',
+        user: null,
+        loginEmail: 'ws4@groupon.com',
+        createdAt: new Date('2024-01-17'),
+      },
+      {
+        id: 'inv_sample5',
+        link: this.generateInvitationUrl('inv_sample5'),
+        status: 'open',
+        user: null,
+        loginEmail: 'ws5@groupon.com',
+        createdAt: new Date('2024-01-18'),
+      },
+      {
+        id: 'inv_sample6',
+        link: this.generateInvitationUrl('inv_sample6'),
+        status: 'open',
+        user: null,
+        loginEmail: 'ws6@groupon.com',
+        createdAt: new Date('2024-01-19'),
+      },
+      {
+        id: 'inv_sample7',
+        link: this.generateInvitationUrl('inv_sample7'),
+        status: 'open',
+        user: null,
+        loginEmail: 'ws7@groupon.com',
+        createdAt: new Date('2024-01-20'),
+      },
+      {
+        id: 'inv_sample8',
+        link: this.generateInvitationUrl('inv_sample8'),
+        status: 'open',
+        user: null,
+        loginEmail: 'ws8@groupon.com',
+        createdAt: new Date('2024-01-21'),
       },
     ];
     return sampleLinks;

@@ -193,14 +193,7 @@ export function WorkshopRegistration() {
   return (
     <div className="h-full bg-background flex items-center justify-center p-6">
       <Card className="w-full max-w-md relative">
-        {/* Workshop Status Badge */}
-        <div className="absolute top-4 right-4 bg-primary/10 border border-primary/20 rounded-md px-2 py-1">
-          <span className="text-xs font-medium text-primary">
-            {registeredCount}/{registeredCount + availableCount}
-          </span>
-        </div>
-        
-        <CardHeader className="text-center pr-16">
+        <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-foreground">
             N8N Workshop Registration
           </CardTitle>
