@@ -11,6 +11,10 @@ export class InvitationService {
     return `${baseUrl}/workshop/${id}`;
   }
 
+  private static generateLoginEmail(index: number): string {
+    return `ws${index}@groupon.com`;
+  }
+
   // Initialize some sample invitation links
   static initializeSampleData(): InvitationLink[] {
     const sampleLinks: InvitationLink[] = [
@@ -19,6 +23,7 @@ export class InvitationService {
         link: this.generateInvitationUrl('inv_sample1'),
         status: 'open',
         user: null,
+        loginEmail: this.generateLoginEmail(1),
         createdAt: new Date('2024-01-15'),
       },
       {
@@ -26,6 +31,7 @@ export class InvitationService {
         link: this.generateInvitationUrl('inv_sample2'),
         status: 'open',
         user: null,
+        loginEmail: this.generateLoginEmail(2),
         createdAt: new Date('2024-01-16'),
       },
       {
@@ -33,6 +39,7 @@ export class InvitationService {
         link: this.generateInvitationUrl('inv_sample3'),
         status: 'registered',
         user: 'John Doe',
+        loginEmail: this.generateLoginEmail(3),
         createdAt: new Date('2024-01-14'),
         registeredAt: new Date('2024-01-17'),
       },
@@ -72,13 +79,21 @@ export class InvitationService {
     };
   }
 
-  static createNewInvitation(): InvitationLink {
+  static createNewInvitation(existingInvitations: InvitationLink[] = []): InvitationLink {
     const id = this.generateUniqueId();
+    // Find the next available email index by looking at existing invitations
+    const usedIndexes = existingInvitations.map(inv => {
+      const match = inv.loginEmail.match(/ws(\d+)@groupon\.com/);
+      return match ? parseInt(match[1]) : 0;
+    });
+    const nextIndex = Math.max(0, ...usedIndexes) + 1;
+    
     return {
       id,
       link: this.generateInvitationUrl(id),
       status: 'open',
       user: null,
+      loginEmail: this.generateLoginEmail(nextIndex),
       createdAt: new Date(),
     };
   }

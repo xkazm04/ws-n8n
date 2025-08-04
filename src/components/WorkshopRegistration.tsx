@@ -87,7 +87,7 @@ export function WorkshopRegistration() {
       setInvitations(finalInvitations)
     } else {
       // No open invitations available - create a new one
-      const newInvitation = InvitationService.createNewInvitation()
+      const newInvitation = InvitationService.createNewInvitation(invitations)
       const newInvitations = [...invitations, newInvitation]
       const { updatedInvitations: finalUpdatedInvitations, invitationUrl: finalResultUrl } = 
         InvitationService.registerUser(newInvitations, userName)
@@ -98,10 +98,12 @@ export function WorkshopRegistration() {
     }
     
     // Save user profile and registration info to localStorage
+    const assignedInvitation = finalInvitations.find(inv => inv.link === finalUrl)
     const userProfile: UserProfile = {
       name: formData.name,
       surname: formData.surname,
       invitationUrl: finalUrl,
+      loginEmail: assignedInvitation?.loginEmail || '',
       registrationDate: new Date().toISOString()
     }
     
@@ -169,6 +171,11 @@ export function WorkshopRegistration() {
                   <Copy className="w-4 h-4" />
                   Copy Link
                 </Button>
+              </div>
+              <div className="pt-2 border-t border-border">
+                <p className="text-sm text-muted-foreground">
+                  Login: <span className="font-mono font-medium text-foreground">{registrationInfo.user.loginEmail}</span>
+                </p>
               </div>
             </div>
             <div className="text-sm text-muted-foreground">

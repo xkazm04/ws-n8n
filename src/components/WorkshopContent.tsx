@@ -60,17 +60,22 @@ export function WorkshopContent() {
   const personalizedTutorial = userProfile ? {
     ...tutorialData,
     description: (
-      <div className="flex items-center gap-3">
-        <span>Welcome {userProfile.name}! Your workshop invitation:</span>
-        <Button
-          onClick={() => copyToClipboard(userProfile.invitationUrl)}
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2 text-xs"
-        >
-          <Copy className="w-3 h-3" />
-          Copy Link
-        </Button>
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <span>Welcome {userProfile.name}! Your workshop invitation:</span>
+          <Button
+            onClick={() => copyToClipboard(userProfile.invitationUrl)}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 text-xs"
+          >
+            <Copy className="w-3 h-3" />
+            Copy Link
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Login: <span className="font-mono font-medium text-foreground">{userProfile.loginEmail}</span>
+        </p>
       </div>
     )
   } : tutorialData
