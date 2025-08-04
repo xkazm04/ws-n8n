@@ -8,13 +8,14 @@ interface MarkdownRendererProps {
 }
 
 interface ParsedElement {
-  type: 'header' | 'paragraph' | 'code' | 'list' | 'checkbox' | 'bold' | 'link' | 'inline-code' | 'aside' | 'divider'
+  type: 'header' | 'paragraph' | 'code' | 'list' | 'checkbox' | 'bold' | 'link' | 'inline-code' | 'aside' | 'divider' | 'image'
   content: string
   level?: number
   language?: string
   checked?: boolean
   id?: string
   href?: string
+  alt?: string
 }
 
 // Custom syntax highlighter theme that matches our design
@@ -103,21 +104,21 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         elements.push({
           type: 'header',
           level: 3,
-          content: line.replace(/^### /, '')
+          content: line.replace(/^### /, '').replace(/^\*\*(.*?)\*\*$/, '$1') // Remove bold markers from headers
         })
       } else if (line.startsWith('##')) {
         flushList()
         elements.push({
           type: 'header',
           level: 2,
-          content: line.replace(/^## /, '')
+          content: line.replace(/^## /, '').replace(/^\*\*(.*?)\*\*$/, '$1') // Remove bold markers from headers
         })
       } else if (line.startsWith('#')) {
         flushList()
         elements.push({
           type: 'header',
           level: 1,
-          content: line.replace(/^# /, '')
+          content: line.replace(/^# /, '').replace(/^\*\*(.*?)\*\*$/, '$1') // Remove bold markers from headers
         })
       }
       // Code blocks
@@ -159,6 +160,18 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
       // Numbered list items
       else if (line.match(/^\d+\. /)) {
         currentList.push(line.replace(/^\d+\. /, ''))
+      }
+      // Images - standalone images on their own line (with optional whitespace)
+      else if (line.match(/^\s*\[([^\]]*)\]\(([^)]+)\)\s*$/)) {
+        flushList()
+        const match = line.match(/^\s*\[([^\]]*)\]\(([^)]+)\)\s*$/)
+        if (match) {
+          elements.push({
+            type: 'image',
+            content: match[2].trim(), // URL
+            alt: match[1].trim() // Alt text
+          })
+        }
       }
       // Regular paragraphs
       else {
@@ -367,6 +380,16 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                       const trimmedLine = line.trim()
                       if (!trimmedLine) return null
                       
+                      // Handle headers within aside blocks - remove the ### and ** formatting
+                      if (trimmedLine.startsWith('###')) {
+                        const headerText = trimmedLine.replace(/^### /, '').replace(/^\*\*(.*?)\*\*$/, '$1')
+                        return (
+                          <h4 key={lineIndex} className="font-semibold text-blue-900 text-lg mb-2 mt-1">
+                            {headerText}
+                          </h4>
+                        )
+                      }
+                      
                       return (
                         <p key={lineIndex} className="leading-relaxed">
                           {renderInlineContent(trimmedLine)}
@@ -381,6 +404,45 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           case 'divider':
             return (
               <hr key={index} className="my-8 border-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+            )
+
+          case 'image':
+            return (
+              <div key={index} className="my-8">
+                <div className="relative w-full max-w-5xl mx-auto">
+                  <img
+                    src={element.content}
+                    alt={element.alt || 'Tutorial image'}
+                    className="w-full h-auto rounded-lg shadow-lg border border-border object-contain max-h-[70vh] bg-white/50 image-loaded"
+                    loading="lazy"
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto'
+                    }}
+                    onLoad={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.classList.add('image-loaded')
+                    }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      const parent = target.parentElement
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="flex flex-col items-center justify-center h-32 bg-muted rounded-lg border border-border">
+                            <span class="text-muted-foreground text-sm">Failed to load image</span>
+                            <span class="text-muted-foreground text-xs mt-1 opacity-70">Check the URL or try refreshing</span>
+                          </div>
+                        `
+                      }
+                    }}
+                  />
+                  {element.alt && (
+                    <p className="text-center text-sm text-muted-foreground mt-3 italic">
+                      {element.alt}
+                    </p>
+                  )}
+                </div>
+              </div>
             )
 
           case 'paragraph':
